@@ -1,0 +1,10 @@
+doctype html
+html
+  head
+    title Enter ID
+  body
+    h1 Enter Your ID
+    form(action="/display" method="POST")
+      label(for="id") ID Number:
+      input(type="text" name="id" required)
+      button(type="submit") Submit
