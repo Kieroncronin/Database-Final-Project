@@ -1,0 +1,15 @@
+doctype html
+html 
+    head
+        title Enter ID and role 
+    body
+        h1 Enter your ID and choose your role 
+        form(action="/display" method="POST")
+            label(for="id") ID Number:
+            input(type="text" name="id" required)
+            label(for="role") Choose role:
+            select(name="role" required)
+                option(value="student") Student
+                option(value="teacher") Teacher
+                option(value="admin") Admin
+            button(type="submit") Submit
