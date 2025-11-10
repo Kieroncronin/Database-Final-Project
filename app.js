@@ -11,11 +11,11 @@ app.get('/', (req, res) => {
 
 app.post('/display', (req, res) => {
     const {id, role} = req.body;
-    if (role === 'teacher'){
-        res.render('teacher', {id});
+    if (role === 'faculty'){
+        res.render('faculty', {id});
     }
-    else if (role === 'admin'){
-        res.render('admin', {id});
+    else if (role === 'registrar'){
+        res.render('registrar', {id});
     }
     else {
         res.render('student', {id});
