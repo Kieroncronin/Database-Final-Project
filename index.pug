@@ -2,9 +2,21 @@ doctype html
 html
   head
     title Enter ID
+    script.
+      function selectRole(role) {
+        document.getElementByID('role').value = role;
+      }
   body
-    h1 Enter Your ID
+    h1 Enter Your ID and choose role
+
     form(action="/display" method="POST")
       label(for="id") ID Number:
       input(type="text" name="id" required)
+
+
+      p Choose your role:
+      button(type="button" onclick="setRole('student')") Student
+      button(type="button" onclick="setRole('faculty')") Faculty
+      button(type="button" onclick="setRole('registrar')") Registrar
+      br
       button(type="submit") Submit
