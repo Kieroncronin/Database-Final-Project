@@ -2,6 +2,7 @@ doctype html
 html
     head 
         title Student Page 
-        p Your ID is: #{id}
-        p Your role is: Student
+        p Your SSN is: #{student.StdSSN}
+        p Your name is: #{student.StdFirstName} #{student.StdLastName}
+        p Your GPA is: #{student.StdGPA}
         a(href="/") Back
