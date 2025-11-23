@@ -1,8 +1,78 @@
 doctype html
 html
     head 
-        title Student Page 
-        p Your SSN is: #{student.StdSSN}
-        p Your name is: #{student.StdFirstName} #{student.StdLastName}
-        p Your GPA is: #{student.StdGPA}
+        title Student Page
+        style.
+            body { font-family: Arial, sans-serif; margin: 20px; }
+            table { border-collapse: collapse; margin-bottom: 25px; width: 100%; }
+            th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+            th { background-color: #eee; }
+            h2 { margin-top: 30px; }
+            .btn { padding: 4px 10px; border: none; border-radius: 3px; cursor: pointer; }
+            .btn-enroll { background-color: #007bff; color: white; }
+            .btn-drop { background-color: #d9534f; color: white; }
+            .enrolled { color: green; font-weight: bold; }
+    body
+        p Your ID is: #{id}
+        p Your role is: Student
         a(href="/") Back
+
+        
+        h2 Enrolled Courses
+        if enrolled.length === 0
+            p You are not enrolled in any courses.
+        else
+            table
+                thead
+                    tr
+                        th Offering #
+                        th Course #
+                        th Instructor
+                        th Term
+                        th Year
+                        th Grade
+                        th Drop
+                tbody
+                    each row in enrolled
+                        tr
+                            td #{row.OfferingNum}
+                            td #{row.CourseNum}
+                            td #{row.Instructor}
+                            td #{row.Term}
+                            td #{row.Year}
+                            td #{row.Grade || 'N/A'}
+                            td
+                                form(action="/student/drop" method="POST")
+                                    input(type="hidden" name="id" value=id)
+                                    input(type="hidden" name="offering" value=row.OfferingNum)
+                                    button.btn.btn-drop(type="submit") Drop
+
+        
+        h2 Winter 2025 Course Offerings
+        table
+            thead
+                tr
+                    th Offering #
+                    th Course #
+                    th Instructor
+                    th Location
+                    th Time
+                    th Days
+                    th Action
+            tbody
+                each o in offerings
+                    tr
+                        td #{o.OfferingNum}
+                        td #{o.CourseNum}
+                        td #{o.Instructor}
+                        td #{o.Location}
+                        td #{o.Time}
+                        td #{o.Days}
+                        td
+                            if o.enrolled
+                                span.enrolled Enrolled
+                            else
+                                form(action="/student/enroll" method="POST")
+                                    input(type="hidden" name="id" value=id)
+                                    input(type="hidden" name="offering" value=o.OfferingNum)
+                                    button.btn.btn-enroll(type="submit") Enroll
