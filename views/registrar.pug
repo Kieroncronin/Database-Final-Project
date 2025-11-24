@@ -1,7 +1,16 @@
-doctype html
-html
-    head 
-        title Registrar Page 
-        p Your ID is: #{id}
-        p Your role is: Registrar
-        a(href="/") Back
+h1 Registrar Overview
+
+h2 Students
+ul
+  each s in students
+    li #{s.StdSSN} - #{s.StdFirstName} #{s.StdLastName}
+
+h2 Faculty
+ul
+  each f in faculty
+    li #{f.FacSSN} - #{f.FacFirstName} #{f.FacLastName}
+
+h2 Course Offerings
+ul
+  each c in courses
+    li #{c.OfferNo} - #{c.CourseNo} (#{c.OffTerm} #{c.OffYear})
