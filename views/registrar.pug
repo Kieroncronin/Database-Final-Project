@@ -1,16 +1,36 @@
-h1 Registrar Overview
+doctype html
+html
+  head 
+    title Faculty Page 
+    style.
+      body { font-family: Arial, sans-serif; margin: 20px; }
+      table { border-collapse: collapse; margin-top: 20px; width: 100%; }
+      th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+      th { background-color: #eee; }
+  body
+    p Your SSN is: #{faculty.FacSSN}
+    p Your name is: #{faculty.FacFirstName} #{faculty.FacLastName}
+    p Your Department is: #{faculty.FacDept}
+    a(href="/") Back
 
-h2 Students
-ul
-  each s in students
-    li #{s.StdSSN} - #{s.StdFirstName} #{s.StdLastName}
-
-h2 Faculty
-ul
-  each f in faculty
-    li #{f.FacSSN} - #{f.FacFirstName} #{f.FacLastName}
-
-h2 Course Offerings
-ul
-  each c in courses
-    li #{c.OfferNo} - #{c.CourseNo} (#{c.OffTerm} #{c.OffYear})
+    h2 Courses Taught
+    - var safeOfferings = offerings || []
+    - if (safeOfferings.length === 0)
+      p No courses found.
+    - else
+      table
+        thead
+          tr
+            th Offering #
+            th Course #
+            th Term
+            th Year
+            th Location
+        tbody
+          each o in safeOfferings
+            tr
+              td #{o.OfferNo}
+              td #{o.CourseNo}
+              td #{o.OffTerm}
+              td #{o.OffYear}
+              td #{o.OffLocation}
