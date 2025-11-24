@@ -17,11 +17,11 @@ html
         p Your role is: Student
         a(href="/") Back
 
-        
         h2 Enrolled Courses
-        if enrolled.length === 0
+        - var safeEnrolled = enrolled || []
+        - if (safeEnrolled.length === 0)
             p You are not enrolled in any courses.
-        else
+        - else
             table
                 thead
                     tr
@@ -33,22 +33,23 @@ html
                         th Grade
                         th Drop
                 tbody
-                    each row in enrolled
+                    - for (var i = 0; i < safeEnrolled.length; i++)
+                        - var row = safeEnrolled[i]
                         tr
-                            td #{row.OfferingNum}
-                            td #{row.CourseNum}
+                            td #{row.OfferNo}
+                            td #{row.CourseNo}
                             td #{row.Instructor}
-                            td #{row.Term}
-                            td #{row.Year}
-                            td #{row.Grade || 'N/A'}
+                            td #{row.OffTerm}
+                            td #{row.OffYear}
+                            td #{row.EnrGrade || 'N/A'}
                             td
                                 form(action="/student/drop" method="POST")
                                     input(type="hidden" name="id" value=id)
-                                    input(type="hidden" name="offering" value=row.OfferingNum)
+                                    input(type="hidden" name="offering" value=row.OfferNo)
                                     button.btn.btn-drop(type="submit") Drop
 
-        
         h2 Winter 2025 Course Offerings
+        - var safeOfferings = offerings || []
         table
             thead
                 tr
@@ -60,19 +61,20 @@ html
                     th Days
                     th Action
             tbody
-                each o in offerings
+                - for (var i = 0; i < safeOfferings.length; i++)
+                    - var o = safeOfferings[i]
                     tr
-                        td #{o.OfferingNum}
-                        td #{o.CourseNum}
+                        td #{o.OfferNo}
+                        td #{o.CourseNo}
                         td #{o.Instructor}
-                        td #{o.Location}
-                        td #{o.Time}
-                        td #{o.Days}
+                        td #{o.OffLocation}
+                        td #{o.OffTime}
+                        td #{o.OffDays}
                         td
-                            if o.enrolled
+                            - if (o.enrolled)
                                 span.enrolled Enrolled
-                            else
+                            - else
                                 form(action="/student/enroll" method="POST")
                                     input(type="hidden" name="id" value=id)
-                                    input(type="hidden" name="offering" value=o.OfferingNum)
+                                    input(type="hidden" name="offering" value=o.OfferNo)
                                     button.btn.btn-enroll(type="submit") Enroll

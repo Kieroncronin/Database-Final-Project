@@ -25,12 +25,12 @@ app.get("/student", (req, res) => {
 
         
         const enrolledSql = `
-            SELECT o.OfferingNum, o.CourseNum, o.Term, o.Year,
-                   f.FirstName || ' ' || f.LastName AS Instructor,
-                   e.Grade
-            FROM Enrollments e
-            JOIN Offerings o ON e.OfferingNum = o.OfferingNum
-            LEFT JOIN Faculty f ON o.Instructor = f.FacSSN
+            SELECT o.OfferNo, o.CourseNo, o.OffTerm, o.OffYear,
+                   f.FacFirstName || ' ' || f.FacLastName AS Instructor,
+                   e.EnrGrade
+            FROM Enrollment e
+            JOIN Offering o ON e.OfferNo = o.OfferNo
+            LEFT JOIN Faculty f ON o.FacSSN = f.FacSSN
             WHERE e.StdSSN = ?
         `;
 
@@ -39,21 +39,22 @@ app.get("/student", (req, res) => {
 
             
             const winterSql = `
-                SELECT o.OfferingNum, o.CourseNum,
-                       f.FirstName || ' ' || f.LastName AS Instructor,
-                       o.Location, o.Time, o.Days
-                FROM Offerings o
-                LEFT JOIN Faculty f ON o.Instructor = f.FacSSN
-                WHERE o.Term = 'Winter' AND o.Year = 2025
+                SELECT o.OfferNo, o.CourseNo,
+                       f.FacFirstName || ' ' || f.FacLastName AS Instructor,
+                       o.OffLocation, o.OffTime, o.OffDays
+                FROM Offering o
+                LEFT JOIN Faculty f ON o.FacSSN = f.FacSSN
+                WHERE o.OffTerm = 'Winter' AND o.OffYear = 2025
             `;
 
             db.all(winterSql, [], (err, winterRows) => {
                 if (err) return res.send(err.message);
 
-                
-                const enrolledSet = new Set(enrolledRows.map(r => r.OfferingNum));
+                winterRows = winterRows || [];
+
+                const enrolledSet = new Set(enrolledRows.map(r => r.OfferNo));
                 winterRows.forEach(o => {
-                    o.enrolled = enrolledSet.has(o.OfferingNum);
+                    o.enrolled = enrolledSet.has(o.OfferNo);
                 });
 
                 res.render("student", {
@@ -73,14 +74,14 @@ app.post("/student/enroll", (req, res) => {
 
     
     db.get(
-        "SELECT 1 FROM Enrollments WHERE StdSSN = ? AND OfferingNum = ?",
+        "SELECT 1 FROM Enrollment WHERE StdSSN = ? AND OfferNo = ?",
         [id, offering],
         (err, row) => {
             if (row) return res.redirect(`/student?id=${id}`);
 
            
             db.run(
-                "INSERT INTO Enrollments (StdSSN, OfferingNum) VALUES (?, ?)",
+                "INSERT INTO Enrollment (StdSSN, OfferNo) VALUES (?, ?)",
                 [id, offering],
                 err => {
                     res.redirect(`/student?id=${id}`);
@@ -94,7 +95,7 @@ app.post("/student/enroll", (req, res) => {
 app.post("/student/drop", (req, res) => {
     const { id, offering } = req.body;
     db.run(
-        "DELETE FROM Enrollments WHERE StdSSN = ? AND OfferingNum = ?",
+        "DELETE FROM Enrollment WHERE StdSSN = ? AND OfferNo = ?",
         [id, offering],
         err => {
             res.redirect(`/student?id=${id}`);
@@ -109,9 +110,13 @@ app.post("/display", (req, res) => {
     if (role === "student") {
         res.redirect(`/student?id=${id}`);
     } else if (role === "faculty") {
-        res.send("Faculty page not implemented yet.");
+        db.get("SELECT * FROM Faculty WHERE FacSSN = ?", [id], (err, row) =>{
+            if (err) return res.send("Error: " + err.message);
+            if (!row) return res.send("Faculty ID not found");
+            res.render('faculty', { faculty: row });
+        });
     } else if (role === "registrar") {
-        res.send("Registrar page not implemented yet.");
+        res.render('registrar', {id});
     } else {
         res.send("Invalid role.");
     }
