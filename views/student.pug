@@ -17,6 +17,7 @@ html
         p Your role is: Student
         a(href="/") Back
 
+        // Past / currently enrolled courses (read-only)
         h2 Enrolled Courses
         - var safeEnrolled = enrolled || []
         - if (safeEnrolled.length === 0)
@@ -31,23 +32,18 @@ html
                         th Term
                         th Year
                         th Grade
-                        th Drop
                 tbody
                     - for (var i = 0; i < safeEnrolled.length; i++)
                         - var row = safeEnrolled[i]
                         tr
                             td #{row.OfferNo}
                             td #{row.CourseNo}
-                            td #{row.Instructor}
+                            td #{row.Instructor || ''}
                             td #{row.OffTerm}
                             td #{row.OffYear}
                             td #{row.EnrGrade || 'N/A'}
-                            td
-                                form(action="/student/drop" method="POST")
-                                    input(type="hidden" name="id" value=id)
-                                    input(type="hidden" name="offering" value=row.OfferNo)
-                                    button.btn.btn-drop(type="submit") Drop
 
+        // Upcoming term offerings (Winter 2025) with Enroll/Drop buttons
         h2 Winter 2025 Course Offerings
         - var safeOfferings = offerings || []
         table
@@ -66,15 +62,20 @@ html
                     tr
                         td #{o.OfferNo}
                         td #{o.CourseNo}
-                        td #{o.Instructor}
+                        td #{o.Instructor || ''}
                         td #{o.OffLocation}
                         td #{o.OffTime}
                         td #{o.OffDays}
                         td
                             - if (o.enrolled)
-                                span.enrolled Enrolled
+                                form(action="/student/drop" method="POST")
+                                    input(type="hidden" name="id" value=id)
+                                    input(type="hidden" name="offering" value=o.OfferNo)
+                                    button.btn.btn-drop(type="submit") Drop
                             - else
                                 form(action="/student/enroll" method="POST")
                                     input(type="hidden" name="id" value=id)
                                     input(type="hidden" name="offering" value=o.OfferNo)
                                     button.btn.btn-enroll(type="submit") Enroll
+
+
