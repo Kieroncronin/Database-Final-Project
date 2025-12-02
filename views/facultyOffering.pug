@@ -1,0 +1,47 @@
+doctype html
+html
+    head 
+        title Edit Grades
+        style.
+            body { font-family: Arial, sans-serif; margin: 20px; }
+            table { border-collapse: collapse; margin-bottom: 25px; width: 100%; }
+            th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+            th { background-color: #eee; }
+            h2 { margin-top: 30px; }
+            .btn { padding: 4px 10px; border: none; border-radius: 3px; cursor: pointer; }
+            .btn-save { background-color: #28a745; color: white; }
+            .btn-back { background-color: #6c757d; color: white; }
+
+    body
+        p Offering #: #{offerno}
+        p Faculty ID: #{facid}
+        p Your role is: Faculty
+        a.btn.btn-back(href=`/faculty?id=${facid}`) Back to Courses
+
+        h2 Students Enrolled
+        - var safeStudents = students || []
+        - if (safeStudents.length === 0)
+            p No students enrolled in this offering.
+        - else
+            form(action="/faculty/update-grades" method="POST")
+                input(type="hidden" name="facid" value=facid)
+                input(type="hidden" name="offerno" value=offerno)
+                
+                table
+                    thead
+                        tr
+                            th Student Name
+                            th Student ID
+                            th Current Grade
+                            th New Grade
+                    tbody
+                        - for (var i = 0; i < safeStudents.length; i++)
+                            - var s = safeStudents[i]
+                            tr
+                                td #{s.FullName}
+                                td #{s.StdSSN}
+                                td #{s.EnrGrade || 'N/A'}
+                                td
+                                    input(type="text" name=`grade_${s.StdSSN}` value=s.EnrGrade)
+
+                button.btn.btn-save(type="submit") Save Grades
