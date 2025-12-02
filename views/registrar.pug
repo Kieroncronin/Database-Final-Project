@@ -1,7 +1,74 @@
 doctype html
 html
-    head 
-        title Registrar Page 
-        p Your ID is: #{id}
-        p Your role is: Registrar
-        a(href="/") Back
+  head 
+    title Registrar Page 
+    style.
+      body { font-family: Arial, sans-serif; margin: 20px; }
+      table { border-collapse: collapse; margin-bottom: 25px; width: 100%; }
+      th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+      th { background-color: #eee; }
+      h2 { margin-top: 30px; }
+  body
+    p Your ID is: #{id}
+    p Your role is: Registrar
+    a(href="/") Back 
+
+    h2 All Students
+    - var safeStudents = students || []
+    - if (safeStudents.length === 0)
+      p No students found.
+    - else
+      table
+        thead
+          tr
+            th SSN
+            th First Name
+            th Last Name
+        tbody
+          each s in safeStudents
+            tr
+              td #{s.StdSSN}
+              td #{s.StdFirstName}
+              td #{s.StdLastName}
+
+    h2 All Faculty
+    - var safeFaculty = faculty || []
+    - if (safeFaculty.length === 0)
+      p No faculty found.
+    - else
+      table
+        thead
+          tr
+            th SSN
+            th First Name
+            th Last Name
+            th Department
+        tbody
+          each f in safeFaculty
+            tr
+              td #{f.FacSSN}
+              td #{f.FacFirstName}
+              td #{f.FacLastName}
+              td #{f.FacDept}
+
+    h2 All Course Offerings
+    - var safeCourses = courses || []
+    - if (safeCourses.length === 0)
+      p No courses found.
+    - else
+      table
+        thead
+          tr
+            th Offering #
+            th Course #
+            th Term
+            th Year
+            th Location
+        tbody
+          each c in safeCourses
+            tr
+              td #{c.OfferNo}
+              td #{c.CourseNo}
+              td #{c.OffTerm}
+              td #{c.OffYear}
+              td #{c.OffLocation}

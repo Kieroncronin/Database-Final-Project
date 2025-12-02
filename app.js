@@ -8,11 +8,9 @@ app.use(express.urlencoded({ extended: true }));
 
 const db = new sql3.Database("./univdb.sqli");
 
-
 app.get("/", (req, res) => {
     res.render("index");
 });
-
 
 app.get("/student", (req, res) => {
     const id = req.query.id;
@@ -89,7 +87,6 @@ app.post("/student/enroll", (req, res) => {
     );
 });
 
-
 app.post("/student/drop", (req, res) => {
     const { id, offering } = req.body;
 
@@ -104,7 +101,7 @@ app.post("/student/drop", (req, res) => {
             db.run(
                 "DELETE FROM Enrollment WHERE StdSSN = ? AND OfferNo = ?",
                 [id, offering],
-                err => {
+                (err) => {
                     if (err) return res.send(err.message);
                     res.redirect(`/student?id=${id}`);
                 }
@@ -112,8 +109,6 @@ app.post("/student/drop", (req, res) => {
         }
     );
 });
-
-
 
 app.post("/display", (req, res) => {
     const { id, role } = req.body;
