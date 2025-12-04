@@ -38,7 +38,7 @@ app.get("/student", (req, res) => {
                        o.OffLocation, o.OffTime, o.OffDays
                 FROM Offering o
                 LEFT JOIN Faculty f ON o.FacSSN = f.FacSSN
-                WHERE o.OffTerm = 'WINTER' AND o.OffYear = 2005
+                WHERE o.OffTerm = 'WINTER' AND o.OffYear = 2025
             `;
             db.all(upcomingSql, [], (err, upcomingRows) => {
                 if (err) return res.send(err.message);
