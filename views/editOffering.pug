@@ -1,0 +1,51 @@
+doctype html
+html
+  head
+    title Edit Offering
+    style.
+      body { font-family: Arial, sans-serif; margin: 20px; }
+      table { border-collapse: collapse; width: 100%; margin-bottom: 20px; }
+      th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+      th { background-color: #eee; }
+      input, select { width: 100%; box-sizing: border-box; }
+      button { padding: 5px 10px; }
+  body
+    h2 Edit Offering #{offering.OfferNo}
+    form(action=`/registrar/edit/${offering.OfferNo}` method="post")
+      input(type="hidden" name="id" value=id)
+      table
+        tbody
+          tr
+            th Course #
+            td #{offering.CourseNo}
+          tr
+            th Title
+            td #{offering.CrsDesc}
+          tr
+            th Credit Hours
+            td #{offering.CrsUnits}
+          tr
+            th Instructor
+            td
+              select(name="Instructor" required)
+                option(value="" disabled) Select Instructor
+                each f in facultyList
+                  if f.FacSSN == offering.Instructor
+                    option(value=f.FacSSN selected)= f.FacFirstName + ' ' + f.FacLastName
+                  else
+                    option(value=f.FacSSN)= f.FacFirstName + ' ' + f.FacLastName
+          tr
+            th Location
+            td
+              input(type="text" name="Location" value=offering.Location required)
+          tr
+            th Time
+            td
+              input(type="text" name="Time" value=offering.Time required)
+          tr
+            th Days
+            td
+              input(type="text" name="Days" value=offering.Days required)
+      button(type="submit") Save Changes
+    br
+    a(href=`/registrar?id=${id}`) Back to Registrar

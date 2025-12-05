@@ -44,10 +44,7 @@ app.get("/student", (req, res) => {
                 if (err) return res.send(err.message);
                 upcomingRows = upcomingRows || [];
 
-                const enrolledOfferings = new Set(
-                    enrolledRows.map(r => r.OfferNo)
-                );
-
+                const enrolledOfferings = new Set(enrolledRows.map(r => r.OfferNo));
                 upcomingRows.forEach(o => {
                     o.enrolled = enrolledOfferings.has(o.OfferNo);
                 });
@@ -63,51 +60,33 @@ app.get("/student", (req, res) => {
     });
 });
 
-
-
 app.post("/student/enroll", (req, res) => {
     const { id, offering } = req.body;
 
-    db.get(
-        "SELECT 1 FROM Enrollment WHERE StdSSN = ? AND OfferNo = ?",
-        [id, offering],
-        (err, row) => {
-            if (err) return res.send(err.message);
-            if (row) return res.redirect(`/student?id=${id}`);
+    db.get("SELECT 1 FROM Enrollment WHERE StdSSN = ? AND OfferNo = ?", [id, offering], (err, row) => {
+        if (err) return res.send(err.message);
+        if (row) return res.redirect(`/student?id=${id}`);
 
-            db.run(
-                "INSERT INTO Enrollment (StdSSN, OfferNo) VALUES (?, ?)",
-                [id, offering],
-                err => {
-                    if (err) return res.send(err.message);
-                    res.redirect(`/student?id=${id}`);
-                }
-            );
-        }
-    );
+        db.run("INSERT INTO Enrollment (StdSSN, OfferNo) VALUES (?, ?)", [id, offering], err => {
+            if (err) return res.send(err.message);
+            res.redirect(`/student?id=${id}`);
+        });
+    });
 });
 
 app.post("/student/drop", (req, res) => {
     const { id, offering } = req.body;
 
-    db.get(
-        "SELECT EnrGrade FROM Enrollment WHERE StdSSN = ? AND OfferNo = ?",
-        [id, offering],
-        (err, row) => {
-            if (err) return res.send(err.message);
-            if (!row) return res.redirect(`/student?id=${id}`);
-            if (row.EnrGrade) return res.redirect(`/student?id=${id}`);
+    db.get("SELECT EnrGrade FROM Enrollment WHERE StdSSN = ? AND OfferNo = ?", [id, offering], (err, row) => {
+        if (err) return res.send(err.message);
+        if (!row) return res.redirect(`/student?id=${id}`);
+        if (row.EnrGrade) return res.redirect(`/student?id=${id}`);
 
-            db.run(
-                "DELETE FROM Enrollment WHERE StdSSN = ? AND OfferNo = ?",
-                [id, offering],
-                (err) => {
-                    if (err) return res.send(err.message);
-                    res.redirect(`/student?id=${id}`);
-                }
-            );
-        }
-    );
+        db.run("DELETE FROM Enrollment WHERE StdSSN = ? AND OfferNo = ?", [id, offering], err => {
+            if (err) return res.send(err.message);
+            res.redirect(`/student?id=${id}`);
+        });
+    });
 });
 
 app.post("/display", (req, res) => {
@@ -118,7 +97,7 @@ app.post("/display", (req, res) => {
     } else if (role === "faculty") {
         res.redirect(`/faculty?id=${id}`);
     } else if (role === "registrar") {
-        res.render('registrar', {id});
+        res.redirect(`/registrar?id=${id}`);
     } else {
         res.send("Invalid role.");
     }
@@ -137,7 +116,6 @@ app.get("/faculty", (req, res) => {
             FROM Offering
             WHERE FacSSN = ?
         `;
-
         db.all(offeringSql, [id], (err, offerings) => {
             if (err) return res.send(err.message);
 
@@ -160,7 +138,6 @@ app.get("/faculty/offering", (req, res) => {
         JOIN Student s ON e.StdSSN = s.StdSSN
         WHERE e.OfferNo = ?
     `;
-
     db.all(sql, [offerno], (err, students) => {
         if (err) return res.send(err.message);
 
@@ -193,6 +170,139 @@ app.post("/faculty/update-grades", (req, res) => {
         res.redirect(`/faculty/offering?facid=${facid}&offerno=${offerno}`);
     });
 });
+
+app.get("/registrar", (req, res) => {
+    const id = req.query.id;
+
+    const offeringSql = `
+        SELECT o.OfferNo, o.CourseNo,
+               f.FacFirstName || ' ' || f.FacLastName AS Instructor,
+               o.OffLocation AS Location,
+               o.OffTime AS Time,
+               o.OffDays AS Days
+        FROM Offering o
+        LEFT JOIN Faculty f ON o.FacSSN = f.FacSSN
+        WHERE o.OffTerm = 'WINTER' AND o.OffYear = 2025
+    `;
+    db.all(offeringSql, [], (err, offerings) => {
+        if (err) return res.send(err.message);
+
+        const courseSql = "SELECT CourseNo, CrsDesc, CrsUnits FROM Course";
+        db.all(courseSql, [], (err, courses) => {
+            if (err) return res.send(err.message);
+
+            db.all("SELECT FacSSN, FacFirstName, FacLastName FROM Faculty", [], (err, facultyList) => {
+                if (err) return res.send(err.message);
+
+                res.render("registrar", {
+                    id,
+                    offerings,
+                    courses,
+                    facultyList
+                });
+            });
+        });
+    });
+});
+
+app.post("/registrar/add", (req, res) => {
+    const { OfferNo, CourseNo, Instructor, Location, Time, Days, id } = req.body;
+
+    db.run(
+        `INSERT INTO Offering 
+         (OfferNo, CourseNo, FacSSN, OffLocation, OffTime, OffDays, OffTerm, OffYear)
+         VALUES (?, ?, ?, ?, ?, ?, 'WINTER', 2025)`,
+        [OfferNo, CourseNo, Instructor, Location, Time, Days],
+        function(err) {
+            if (err) return res.send(err.message);
+
+            const offeringSql = `
+                SELECT 
+                    o.OfferNo, 
+                    o.CourseNo,
+                    COALESCE(f.FacFirstName,'') || ' ' || COALESCE(f.FacLastName,'') AS Instructor,
+                    o.OffLocation AS Location,
+                    o.OffTime AS Time,
+                    o.OffDays AS Days
+                FROM Offering o
+                LEFT JOIN Faculty f ON o.FacSSN = f.FacSSN
+                WHERE o.OffTerm = 'WINTER' AND o.OffYear = 2025
+            `;
+
+            db.all(offeringSql, [], (err, offerings) => {
+                if (err) return res.send(err.message);
+
+                const courseSql = "SELECT CourseNo, CrsDesc, CrsUnits FROM Course";
+                db.all(courseSql, [], (err, courses) => {
+                    if (err) return res.send(err.message);
+
+                    db.all("SELECT FacSSN, FacFirstName, FacLastName FROM Faculty", [], (err, facultyList) => {
+                        if (err) return res.send(err.message);
+
+                        res.render("registrar", {
+                            id,
+                            offerings,
+                            courses,
+                            facultyList
+                        });
+                    });
+                });
+            });
+        }
+    );
+});
+
+
+app.get("/registrar/cancel/:offerno", (req, res) => {
+    const { offerno } = req.params;
+    const id = req.query.id;
+
+    db.run("DELETE FROM Offering WHERE OfferNo = ?", [offerno], err => {
+        if (err) return res.send(err.message);
+        res.redirect(`/registrar?id=${id}`);
+    });
+});
+
+app.post("/registrar/edit/:offerno", (req, res) => {
+    const { offerno } = req.params;
+    const { id, Instructor, Location, Time, Days } = req.body;
+
+    db.run(
+        `UPDATE Offering
+         SET FacSSN = ?, OffLocation = ?, OffTime = ?, OffDays = ?
+         WHERE OfferNo = ?`,
+        [Instructor, Location, Time, Days, offerno],
+        err => {
+            if (err) return res.send(err.message);
+            res.redirect(`/registrar?id=${id}`);
+        }
+    );
+});
+
+app.get("/editOffering/:offerno", (req, res) => {
+    const { offerno } = req.params;
+    const id = req.query.id;
+
+    db.get(
+        `SELECT o.OfferNo, o.CourseNo, o.FacSSN AS Instructor, o.OffLocation AS Location, o.OffTime AS Time, o.OffDays AS Days,
+                c.CrsDesc, c.CrsUnits
+         FROM Offering o
+         JOIN Course c ON o.CourseNo = c.CourseNo
+         WHERE o.OfferNo = ?`,
+        [offerno],
+        (err, offering) => {
+            if (err) return res.send(err.message);
+            if (!offering) return res.send("Offering not found.");
+
+            db.all("SELECT FacSSN, FacFirstName, FacLastName FROM Faculty", [], (err, facultyList) => {
+                if (err) return res.send(err.message);
+
+                res.render("editOffering", { id, offering, facultyList });
+            });
+        }
+    );
+});
+
 
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);

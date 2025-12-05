@@ -8,67 +8,76 @@ html
       th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
       th { background-color: #eee; }
       h2 { margin-top: 30px; }
+      form { margin: 0; }
+      input, select { width: 100%; box-sizing: border-box; }
   body
     p Your ID is: #{id}
     p Your role is: Registrar
     a(href="/") Back 
 
-    h2 All Students
-    - var safeStudents = students || []
-    - if (safeStudents.length === 0)
-      p No students found.
-    - else
-      table
-        thead
-          tr
-            th SSN
-            th First Name
-            th Last Name
-        tbody
-          each s in safeStudents
-            tr
-              td #{s.StdSSN}
-              td #{s.StdFirstName}
-              td #{s.StdLastName}
-
-    h2 All Faculty
-    - var safeFaculty = faculty || []
-    - if (safeFaculty.length === 0)
-      p No faculty found.
-    - else
-      table
-        thead
-          tr
-            th SSN
-            th First Name
-            th Last Name
-            th Department
-        tbody
-          each f in safeFaculty
-            tr
-              td #{f.FacSSN}
-              td #{f.FacFirstName}
-              td #{f.FacLastName}
-              td #{f.FacDept}
-
-    h2 All Course Offerings
-    - var safeCourses = courses || []
-    - if (safeCourses.length === 0)
-      p No courses found.
+    h2 Current Offerings (Winter 2025)
+    - var safeOfferings = offerings || []
+    - if (safeOfferings.length === 0)
+      p No offerings scheduled.
     - else
       table
         thead
           tr
             th Offering #
             th Course #
-            th Term
-            th Year
+            th Instructor
             th Location
+            th Time
+            th Days
+            th Actions
         tbody
-          each c in safeCourses
+          each o in safeOfferings
             tr
-              td #{c.OfferNo}
+              td #{o.OfferNo}
+              td #{o.CourseNo}
+              td #{o.Instructor}
+              td #{o.Location}
+              td #{o.Time}
+              td #{o.Days}
+              td
+                a(href=`/editOffering/${o.OfferNo}?id=${id}`) Edit
+                |  
+                a(href=`/registrar/cancel/${o.OfferNo}?id=${id}`) Cancel
+
+    h2 Add New Offering
+    table
+      thead
+        tr
+          th Course #
+          th Title
+          th Credit Hours
+          th Offering #
+          th Instructor
+          th Location
+          th Time
+          th Days
+          th Actions
+      tbody
+        each c in courses
+          tr
+            form(action="/registrar/add" method="post")
+              input(type="hidden" name="CourseNo" value=c.CourseNo)
+              input(type="hidden" name="id" value=id)
               td #{c.CourseNo}
-              td #{c.OffTerm}
-              td #{c.OffYear}
-              td #{c.OffLocation}
+              td #{c.CrsDesc}
+              td #{c.CrsUnits}
+              td
+                input(type="text" name="OfferNo" required)
+              td
+                select(name="Instructor" required)
+                  option(value="" disabled selected) Select Instructor
+                  each f in facultyList
+                    option(value=f.FacSSN)= f.FacFirstName + ' ' + f.FacLastName
+              td
+                input(type="text" name="Location" required)
+              td
+                input(type="text" name="Time" required)
+              td
+                input(type="text" name="Days" required)
+              td
+                button(type="submit") Add
